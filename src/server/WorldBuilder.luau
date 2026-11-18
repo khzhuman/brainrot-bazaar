@@ -23,6 +23,28 @@ function WorldBuilder.AddCylinder(parent: Instance, name: string, diameter: numb
 	return part
 end
 
+-- Dressing never supplies collision, touch targets, or raycast targets.
+function WorldBuilder.AddDecoration(parent: Instance, name: string, size: Vector3, position: Vector3, color: Color3, material: Enum.Material?, shape: Enum.PartType?, rotation: CFrame?): Part
+	local part = WorldBuilder.AddPart(parent, name, size, position, color, material, shape)
+	part.CFrame = CFrame.new(position) * (rotation or CFrame.identity)
+	part.CanCollide = false; part.CanTouch = false; part.CanQuery = false; part.CastShadow = false
+	return part
+end
+
+function WorldBuilder.DressIncomePad(pad: Part, rim: Part, prompt: ProximityPrompt)
+	rim.Material = Enum.Material.Metal; rim.Reflectance = 0.12; rim.CastShadow = false
+	local glow = Instance.new("PointLight")
+	glow.Name = "FreePadGlow"; glow.Range = 5; glow.Brightness = 0.35; glow.Shadows = false; glow.Parent = pad
+	local function refreshAppearance()
+		-- The existing prompt already says whether this pad is free and unlocked.
+		glow.Enabled = prompt.Enabled; glow.Color = pad.Color
+		rim.Color = pad.Color:Lerp(CREAM, 0.65)
+	end
+	prompt:GetPropertyChangedSignal("Enabled"):Connect(refreshAppearance)
+	pad:GetPropertyChangedSignal("Color"):Connect(refreshAppearance)
+	refreshAppearance()
+end
+
 function WorldBuilder.AddBillboard(part: BasePart, name: string, text: string, color: Color3, width: number, height: number, offset: number): TextLabel
 	local gui = Instance.new("BillboardGui")
 	gui.Name = name; gui.Adornee = part; gui.Size = UDim2.fromOffset(width, height)
@@ -99,6 +121,43 @@ function WorldBuilder.BuildBoardwalkAndPlaza(world)
 	world.PublicSpawn.Neutral = true; world.PublicSpawn.Duration = 0; world.PublicSpawn.Parent = world.Model
 end
 
+function WorldBuilder.BuildShopStalls(world)
+	local stalls = Instance.new("Model"); stalls.Name = "StripedShopStalls"; stalls.Parent = world.Model
+	for _, side in { -1, 1 } do
+		local stripeColor = if side < 0 then Color3.fromRGB(245, 113, 128) else AQUA
+		for _, z in { -22, 0, 22 } do
+			for _, offset in { -5, 5 } do
+				WorldBuilder.AddDecoration(stalls, "StallPost", Vector3.new(0.45, 8, 0.45), Vector3.new(side * 26, 8.9, z + offset), WOOD, Enum.Material.Wood)
+			end
+			WorldBuilder.AddDecoration(stalls, "AwningBeam", Vector3.new(0.3, 0.3, 12), Vector3.new(side * 26, 12.8, z), WOOD, Enum.Material.Wood)
+			WorldBuilder.AddDecoration(stalls, "StallCounter", Vector3.new(3.4, 2.7, 10), Vector3.new(side * 21, 6.5, z), stripeColor, Enum.Material.WoodPlanks)
+			WorldBuilder.AddDecoration(stalls, "CounterTop", Vector3.new(3.7, 0.2, 10.4), Vector3.new(side * 21, 7.95, z), CREAM, Enum.Material.Wood)
+			for index = 1, 6 do
+				local color = if index % 2 == 0 then CREAM else stripeColor
+				local stripeZ = z - 5 + (index - 1) * 2
+				WorldBuilder.AddDecoration(stalls, "AwningStripe", Vector3.new(8, 0.22, 2), Vector3.new(side * 22, 12.3, stripeZ), color, Enum.Material.Fabric, nil, CFrame.Angles(0, 0, side * 0.12))
+				WorldBuilder.AddDecoration(stalls, "StripedValance", Vector3.new(0.2, 0.75, 2), Vector3.new(side * 18.03, 11.6, stripeZ), color, Enum.Material.Fabric)
+			end
+		end
+	end
+end
+
+function WorldBuilder.BuildLaneLamps(world)
+	local lamps = Instance.new("Model"); lamps.Name = "BoardwalkLamps"; lamps.Parent = world.Model
+	local upright = CFrame.Angles(0, 0, math.pi / 2)
+	for _, x in { -12, 12 } do
+		for _, z in { -63, -21, 21, 63 } do
+			WorldBuilder.AddDecoration(lamps, "LampFoot", Vector3.new(0.25, 1.5, 1.5), Vector3.new(x, 5.1, z), INK, Enum.Material.Metal, Enum.PartType.Cylinder, upright)
+			WorldBuilder.AddDecoration(lamps, "LampPole", Vector3.new(7.8, 0.28, 0.28), Vector3.new(x, 9, z), INK, Enum.Material.Metal, Enum.PartType.Cylinder, upright)
+			local bulb = WorldBuilder.AddDecoration(lamps, "LampGlobe", Vector3.new(1.3, 1.3, 1.3), Vector3.new(x, 13.4, z), CREAM, Enum.Material.Neon, Enum.PartType.Ball)
+			WorldBuilder.AddDecoration(lamps, "LampCap", Vector3.new(0.12, 1.65, 1.65), Vector3.new(x, 14.06, z), GOLD, Enum.Material.Metal, Enum.PartType.Cylinder, upright)
+			local light = Instance.new("PointLight")
+			light.Name = "WarmLaneLight"; light.Color = Color3.fromRGB(255, 222, 170)
+			light.Brightness = 0.65; light.Range = 11; light.Shadows = false; light.Parent = bulb
+		end
+	end
+end
+
 function WorldBuilder.BuildShopLane(world)
 	WorldBuilder.AddPart(world.Model, "ShopLane", Vector3.new(16, 0.3, 158), Vector3.new(0, 4.95, 0), Color3.fromRGB(244, 165, 129), Enum.Material.WoodPlanks)
 	for _, x in { -8.2, 8.2 } do
@@ -112,6 +171,8 @@ function WorldBuilder.BuildShopLane(world)
 	local sign = WorldBuilder.AddPart(world.Model, "ShopLaneSign", Vector3.new(18, 3, 0.8), Vector3.new(0, 11, -81), INK)
 	WorldBuilder.AddSurfaceText(sign, "THE BRAINROT PARADE\nTOUCH TO BUY", GOLD)
 	WorldBuilder.AddSurfaceText(sign, "THE BRAINROT PARADE\nTOUCH TO BUY", GOLD, Enum.NormalId.Back)
+	WorldBuilder.BuildShopStalls(world)
+	WorldBuilder.BuildLaneLamps(world)
 	world.LaneStart = Vector3.new(0, 5.3, -73); world.LaneEnd = Vector3.new(0, 5.3, 73)
 	world.LaneDirection = (world.LaneEnd - world.LaneStart).Unit; world.LaneLength = (world.LaneEnd - world.LaneStart).Magnitude
 	world.WaveStart = Vector3.new(0, 17, -104); world.WaveEnd = Vector3.new(0, 17, 104)
@@ -170,6 +231,13 @@ function WorldBuilder.BuildPhotoSpotAndEntrance(world)
 	local entrance = WorldBuilder.AddPart(world.Model, "BrainrotBazaarEntranceSign", Vector3.new(58, 8, 1.2), Vector3.new(0, 22, -98), INK)
 	WorldBuilder.AddSurfaceText(entrance, "BRAINROT BAZAAR\nBUY • CARRY • CASH IN", GOLD)
 	WorldBuilder.AddSurfaceText(entrance, "BRAINROT BAZAAR\nSUNSHINE & PASSIVE INCOME", GOLD, Enum.NormalId.Back)
+	WorldBuilder.AddDecoration(world.Model, "EntranceArchTopTrim", Vector3.new(59, 0.45, 1.8), Vector3.new(0, 26.2, -98), GOLD, Enum.Material.Metal)
+	WorldBuilder.AddDecoration(world.Model, "EntranceArchBottomTrim", Vector3.new(59, 0.4, 1.8), Vector3.new(0, 18, -98), GOLD, Enum.Material.Metal)
+	for _, side in { -1, 1 } do
+		WorldBuilder.AddDecoration(world.Model, "EntranceArchSideTrim", Vector3.new(0.45, 8, 1.8), Vector3.new(side * 29.2, 22, -98), GOLD, Enum.Material.Metal)
+		WorldBuilder.AddDecoration(world.Model, "EntrancePostCap", Vector3.new(2.8, 0.35, 2.8), Vector3.new(side * 27, 23.45, -98), CREAM, Enum.Material.Marble)
+		WorldBuilder.AddDecoration(world.Model, "EntranceArchBrace", Vector3.new(6, 0.5, 0.6), Vector3.new(side * 24.8, 17.7, -98), GOLD, Enum.Material.Metal, nil, CFrame.Angles(0, 0, side * math.pi / 4))
+	end
 	local ladder = WorldBuilder.AddPart(world.Model, "RarityLadderBillboard", Vector3.new(16, 17, 1), Vector3.new(-29, 13.3, -52), INK)
 	local gui = Instance.new("SurfaceGui"); gui.Name = "RarityLadder"; gui.CanvasSize = Vector2.new(540, 650); gui.Parent = ladder
 	for index = 0, 5 do
@@ -187,19 +255,14 @@ end
 
 function WorldBuilder.BuildPalmTree(parent: Instance, position: Vector3, index: number)
 	local tree = Instance.new("Model"); tree.Name = "PalmTree" .. index; tree.Parent = parent
-	for level = 1, 5 do
-		local trunk = WorldBuilder.AddCylinder(tree, "PalmTrunk", 1.8 - level * 0.1, 2.4, position + Vector3.new(level * 0.25, level * 2.1, 0), WOOD, Enum.Material.Wood)
-		trunk.CFrame *= CFrame.Angles(0, 0, -0.07)
+	WorldBuilder.AddDecoration(tree, "PalmTrunk", Vector3.new(12, 1.35, 1.35), position + Vector3.new(0.9, 6, 0), Color3.fromRGB(139, 89, 52), Enum.Material.Wood, Enum.PartType.Cylinder, CFrame.Angles(0, 0, math.pi / 2 - 0.14))
+	local crown = position + Vector3.new(1.8, 12, 0)
+	for leafIndex = 1, 6 do
+		local angle = leafIndex * math.pi / 3
+		WorldBuilder.AddDecoration(tree, "PalmFrond", Vector3.new(2.4, 0.48, 8.5), crown + Vector3.new(math.sin(angle) * 3, -0.4, math.cos(angle) * 3), if leafIndex % 2 == 0 then Color3.fromRGB(51, 158, 93) else Color3.fromRGB(81, 181, 107), Enum.Material.Grass, Enum.PartType.Ball, CFrame.Angles(0, angle, 0) * CFrame.Angles(0.22, 0, 0))
 	end
-	local crown = position + Vector3.new(1.2, 11.5, 0)
-	for leafIndex = 1, 7 do
-		local angle = leafIndex * math.pi * 2 / 7
-		local leaf = WorldBuilder.AddPart(tree, "PalmLeaf", Vector3.new(2.6, 0.5, 8), crown + Vector3.new(math.sin(angle) * 3, -0.4, math.cos(angle) * 3), Color3.fromRGB(71, 166, 112), Enum.Material.Grass)
-		leaf.CFrame = CFrame.new(leaf.Position) * CFrame.Angles(0, angle, 0) * CFrame.Angles(0.22, 0, 0)
-		leaf.CanCollide = false
-	end
-	for nut = 1, 3 do
-		WorldBuilder.AddPart(tree, "Coconut", Vector3.new(1.2, 1.2, 1.2), crown + Vector3.new(nut * 0.6 - 1.2, -0.8, 0), Color3.fromRGB(109, 78, 48), nil, Enum.PartType.Ball).CanCollide = false
+	for nut = 1, 2 do
+		WorldBuilder.AddDecoration(tree, "Coconut", Vector3.new(1.1, 1.1, 1.1), crown + Vector3.new(nut * 0.65 - 1, -0.65, 0), Color3.fromRGB(109, 78, 48), nil, Enum.PartType.Ball)
 	end
 end
 
@@ -232,11 +295,12 @@ function WorldBuilder.BuildPlayerBase(world, baseId: number, position: Vector3)
 		local row = math.floor((index - 1) / 4)
 		local column = (index - 1) % 4
 		local padPosition = position + Vector3.new((row * 2 - 1) * 7, 0.9, -13.5 + column * 9)
-		WorldBuilder.AddCylinder(model, "PadRim" .. index, 7.2, 0.14, padPosition - Vector3.new(0, 0.2, 0), CREAM)
+		local rim = WorldBuilder.AddCylinder(model, "PadRim" .. index, 7.2, 0.14, padPosition - Vector3.new(0, 0.2, 0), CREAM)
 		local pad = WorldBuilder.AddCylinder(model, "IncomePad" .. index, 6.4, 0.5, padPosition, AQUA, Enum.Material.Neon)
 		local label = WorldBuilder.AddBillboard(pad, "PadLabel", "PAD " .. index, CREAM, 190, 40, 0.5)
 		label.TextSize = 13; label.Parent.MaxDistance = 55
 		local prompt = WorldBuilder.AddPrompt(pad, "Place carried brainrot", "Income pad " .. index)
+		WorldBuilder.DressIncomePad(pad, rim, prompt)
 		base.Pads[index] = { Part = pad, Label = label, Prompt = prompt }
 	end
 	world.Bases[baseId] = base
@@ -257,7 +321,11 @@ function WorldBuilder.BuildWorld()
 		local z = -56 + ((index - 1) % 3) * 56
 		WorldBuilder.BuildPlayerBase(world, index, Vector3.new(x, 4.3, z))
 	end
-	for index, position in { Vector3.new(-118, 3.8, -86), Vector3.new(118, 3.8, -86), Vector3.new(-118, 3.8, 82), Vector3.new(118, 3.8, 82), Vector3.new(-43, 3.8, 89), Vector3.new(43, 3.8, 89) } do
+	for index, position in {
+		Vector3.new(-118, 3.8, -86), Vector3.new(118, 3.8, -86), Vector3.new(-118, 3.8, 82), Vector3.new(118, 3.8, 82),
+		Vector3.new(-118, 3.8, 0), Vector3.new(118, 3.8, 0), Vector3.new(-43, 3.8, 89), Vector3.new(43, 3.8, 89),
+		Vector3.new(-43, 3.8, -89), Vector3.new(43, 3.8, -89),
+	} do
 		WorldBuilder.BuildPalmTree(model, position, index)
 	end
 	return world
