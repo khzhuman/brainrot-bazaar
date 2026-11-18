@@ -1,5 +1,5 @@
 {
-  "name": "house-dodge",
+  "name": "brainrot-bazaar",
   "tree": {
     "$className": "DataModel",
     "Players": {
@@ -10,6 +10,11 @@
     "ServerScriptService": {
       "Server": {
         "$path": "src/server"
+      }
+    },
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
       }
     },
     "StarterPlayer": {
