@@ -1,10 +1,10 @@
 {
-  "name": "house-dodge",
+  "name": "brainrot-bazaar",
   "tree": {
     "$className": "DataModel",
     "Players": {
       "$properties": {
-        "CharacterAutoLoads": false
+        "CharacterAutoLoads": true
       }
     },
     "ServerScriptService": {
@@ -12,7 +12,16 @@
         "$path": "src/server"
       }
     },
+    "ReplicatedStorage": {
+      "Shared": {
+        "$path": "src/shared"
+      }
+    },
     "StarterPlayer": {
+      "$properties": {
+        "CameraMinZoomDistance": 8,
+        "CameraMaxZoomDistance": 55
+      },
       "StarterPlayerScripts": {
         "Client": {
           "$path": "src/client"

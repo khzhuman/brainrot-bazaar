@@ -1,0 +1,2 @@
+# One job: keep generated local hand-in artifacts out of the recorded source commit.
+out/

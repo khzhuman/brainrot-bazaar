@@ -1,21 +1,25 @@
-# roblox-brainrot-01 starter
+<!-- One job: explain how to play, build, and hand in the official recorded Brainrot Bazaar game. -->
+# BRAINROT BAZAAR
 
-A working entry for make.fun's "Make the best AI Roblox brainrot game" bounty (roblox-brainrot-01), laid out as your
-repository: a Rojo project whose game is a grey square that moves with the arrow keys. It is a starting point, not a
-winner, and not yet the 3D game the bounty asks for: its square is drawn on the screen, not in Roblox's 3D world.
+A sunny 3D seaside boardwalk where deeply unserious investments print serious money. Twelve part-built brainrots parade past striped stalls; six players each get a safe base with eight collection pads.
 
-- `main.ts` (Node 22, standard library only) hands the game in: it copies `game.rbxl`, `src/`, `screenshots/` and
-  `PLAY.json` to `/output`, leaving out every name that starts with a dot (such as `.gitkeep` or `.DS_Store`, which
-  fail an entry), and writes `/output/dossier.json` with `vendor/makefun-roblox.ts`, the kit's copy, unchanged.
-- `game.rbxl` is the place Rojo builds from `src/` and `default.project.json`; `screenshots/` holds three captures of
-  it; `PLAY.json` names no place yet, so the gate refuses the starter as it stands until it names your published one.
-- One of your screenshots must also be your game's first thumbnail on Roblox: the same picture, uploaded on the
-  Creator Dashboard with your game's icon.
-- `TOUR.json` is an example of the optional tour: for each screenshot, the keys that bring the game to that screen.
+Start with **$100**. Touch a parading creature to buy it, or use its proximity prompt to see the price. Carry one creature above your head, then touch a free glowing pad at your own base. Placed creatures pay every second. The big gumball machine sells five rarity bands of random eggs. Every purchase or hatch can roll Golden x5 (10%), Diamond x10 (3%), or Void x25 (0.5%).
 
-Run it as the grader does, writing `out/` in place of `/output`:
+Pads 1–4 start open. Pads 5–8 unlock when your cash has reached $1,000, $10,000, $100,000, and $1,000,000 during the current run. Touch your base's lock button to spend $250 on a 60-second shield. A masked raccoon arrives roughly every 150 seconds to steal the lowest-rate printer from an unshielded base; intercept it to drop a free, recoverable pickup.
 
-    mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+Every 180 seconds, a tsunami warning gives you ten seconds to get inside any base's safe zone. The wave sweeps the lane and plaza, removes unsafe carried brainrots, and temporarily clears the parade. Your base collection stays safe. The golden rebirth shrine starts at $10,000 and costs five times more each rebirth: it clears your cash and collection, gives you $100 to restart, and compounds your permanent income multiplier by x1.5. Your base sign gains a crown.
 
-The rules are on the bounty's page (/bounty/roblox-brainrot-01) and in the kit's RULES.txt,
-which gives every command in order (Before you submit, then Enter).
+The server owns transactions, collection state, income, shields, events, and rebirth. The client displays server attributes and the `ShowBanner` and `FloatingText` remotes. `GameState` holds all mutable gameplay state, and `CharacterCatalog` defines every character, rarity, mutation, and tier. `WorldBuilder` creates the entire environment at startup while preserving the starter Baseplate instance.
+
+Build the Rojo project and produce the kit's reproducible dossier:
+
+```sh
+export PATH="$HOME/workspace/tools/rojo:$PATH"
+rojo build default.project.json --output game.rbxl
+mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+ls -l out/
+```
+
+Open `game.rbxl` in Roblox Studio and start Play to run the 3D game. Use the normal Roblox movement, jump, and camera controls; the HUD stays centred and leaves the top-left controls clear. `src/server` mounts as the `Server` bootstrap Script with ModuleScript children, `src/client` mounts under `StarterPlayerScripts/Client`, and `src/shared` mounts under `ReplicatedStorage/Shared`.
+
+For this official recorded build, the starter `PLAY.json`, screenshots, and vendored make.fun library are retained. Publish and capture the running game in the later publish step. The kit check must run after committing and pushing because it evaluates HEAD; an initial `play_link` failure is expected until publication.
