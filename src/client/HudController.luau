@@ -1,4 +1,4 @@
--- One job: display a compact centred cash HUD, event banner, and contextual carrying hint from server attributes.
+-- One job: display a bold centred cash HUD, event banner, and contextual carrying hint from server attributes.
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -19,7 +19,7 @@ export type Hud = {
 
 local HudController = {}
 local CREAM = Color3.fromRGB(255, 243, 211)
-local INK = Color3.fromRGB(24, 52, 69)
+local INK = Color3.fromRGB(20, 39, 52)
 
 local function roundPanel(frame: Frame, radius: number, colour: Color3)
 	local corner = Instance.new("UICorner")
@@ -27,9 +27,13 @@ local function roundPanel(frame: Frame, radius: number, colour: Color3)
 	corner.Parent = frame
 	local stroke = Instance.new("UIStroke")
 	stroke.Color = colour
-	stroke.Thickness = 1.5
-	stroke.Transparency = 0.28
+	stroke.Thickness = 3
+	stroke.Transparency = 0.14
 	stroke.Parent = frame
+	local shade = Instance.new("UIGradient")
+	shade.Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.fromRGB(195, 209, 220))
+	shade.Rotation = 90
+	shade.Parent = frame
 end
 
 local function buildText(parent: Instance, name: string, text: string, position: UDim2, size: UDim2, colour: Color3, textSize: number): TextLabel
@@ -41,6 +45,8 @@ local function buildText(parent: Instance, name: string, text: string, position:
 	label.TextColor3 = colour
 	label.BackgroundTransparency = 1
 	label.Font = Enum.Font.GothamBold
+	label.TextStrokeColor3 = INK
+	label.TextStrokeTransparency = 0.65
 	label.TextSize = textSize
 	label.TextScaled = true
 	local constraint = Instance.new("UITextSizeConstraint")
@@ -68,50 +74,52 @@ function HudController.BuildHud(player: Player): Hud
 	panel.Name = "CashPanel"
 	panel.AnchorPoint = Vector2.new(0.5, 0)
 	panel.Position = UDim2.new(0.5, 0, 0, 10)
-	panel.Size = UDim2.new(0.8, 0, 0, 114)
+	panel.Size = UDim2.new(0.8, 0, 0, 138)
 	panel.BackgroundColor3 = INK
-	panel.BackgroundTransparency = 0.08
+	panel.BackgroundTransparency = 0.03
 	panel.BorderSizePixel = 0
 	panel.Parent = gui
-	roundPanel(panel, 15, Color3.fromRGB(255, 207, 82))
+	roundPanel(panel, 22, Color3.fromRGB(255, 207, 82))
 	local panelSize = Instance.new("UISizeConstraint")
-	panelSize.MaxSize = Vector2.new(420, 114)
+	panelSize.MaxSize = Vector2.new(448, 138)
 	panelSize.Parent = panel
-	buildText(panel, "GameTitle", "BRAINROT BAZAAR", UDim2.fromScale(0.07, 0.06), UDim2.fromScale(0.86, 0.16), Color3.fromRGB(255, 208, 101), 13)
-	local cash = buildText(panel, "Cash", "$ 100", UDim2.fromScale(0.04, 0.24), UDim2.fromScale(0.92, 0.36), CREAM, 34)
-	local income = buildText(panel, "IncomePerSecond", "+$0/s", UDim2.fromScale(0.06, 0.66), UDim2.fromScale(0.4, 0.18), Color3.fromRGB(143, 245, 184), 18)
-	local rebirth = buildText(panel, "RebirthMultiplier", "Rebirth x1", UDim2.fromScale(0.49, 0.66), UDim2.fromScale(0.46, 0.18), Color3.fromRGB(255, 214, 115), 16)
-	local base = buildText(panel, "BaseAndShrine", "YOUR BASE IS GETTING READY", UDim2.fromScale(0.04, 0.86), UDim2.fromScale(0.92, 0.1), Color3.fromRGB(173, 216, 225), 11)
+	buildText(panel, "GameTitle", "BRAINROT BAZAAR", UDim2.fromScale(0.06, 0.07), UDim2.fromScale(0.88, 0.13), Color3.fromRGB(255, 208, 101), 14)
+	local cash = buildText(panel, "Cash", "$ 100", UDim2.fromScale(0.045, 0.23), UDim2.fromScale(0.91, 0.4), CREAM, 50)
+	cash.Font = Enum.Font.GothamBlack
+	local income = buildText(panel, "IncomePerSecond", "+$0/s", UDim2.fromScale(0.06, 0.66), UDim2.fromScale(0.4, 0.17), Color3.fromRGB(143, 245, 184), 20)
+	local rebirth = buildText(panel, "RebirthMultiplier", "Rebirth x1", UDim2.fromScale(0.49, 0.66), UDim2.fromScale(0.46, 0.17), Color3.fromRGB(255, 214, 115), 18)
+	local base = buildText(panel, "BaseAndShrine", "YOUR BASE IS GETTING READY", UDim2.fromScale(0.04, 0.87), UDim2.fromScale(0.92, 0.09), Color3.fromRGB(173, 216, 225), 12)
 	local banner = Instance.new("Frame")
 	banner.Name = "EventBanner"
 	banner.AnchorPoint = Vector2.new(0.5, 0)
-	banner.Position = UDim2.new(0.5, 0, 0, 133)
-	banner.Size = UDim2.new(0.92, 0, 0, 58)
+	banner.Position = UDim2.new(0.5, 0, 0, 162)
+	banner.Size = UDim2.new(0.92, 0, 0, 70)
 	banner.BackgroundColor3 = Color3.fromRGB(207, 88, 73)
-	banner.BackgroundTransparency = 0.06
+	banner.BackgroundTransparency = 0.02
 	banner.BorderSizePixel = 0
 	banner.Visible = false
 	banner.Parent = gui
-	roundPanel(banner, 12, Color3.fromRGB(255, 222, 161))
+	roundPanel(banner, 20, Color3.fromRGB(255, 222, 161))
 	local bannerSize = Instance.new("UISizeConstraint")
-	bannerSize.MaxSize = Vector2.new(740, 58)
+	bannerSize.MaxSize = Vector2.new(760, 70)
 	bannerSize.Parent = banner
-	local bannerText = buildText(banner, "Announcement", "", UDim2.fromScale(0.03, 0.1), UDim2.fromScale(0.94, 0.8), CREAM, 23)
+	local bannerText = buildText(banner, "Announcement", "", UDim2.fromScale(0.04, 0.12), UDim2.fromScale(0.92, 0.76), CREAM, 26)
+	bannerText.Font = Enum.Font.GothamBlack
 	bannerText.TextWrapped = true
 	local hintPanel = Instance.new("Frame")
 	hintPanel.Name = "HintPanel"
 	hintPanel.AnchorPoint = Vector2.new(0.5, 1)
-	hintPanel.Position = UDim2.new(0.5, 0, 1, -18)
-	hintPanel.Size = UDim2.new(0.94, 0, 0, 56)
+	hintPanel.Position = UDim2.new(0.5, 0, 1, -20)
+	hintPanel.Size = UDim2.new(0.94, 0, 0, 64)
 	hintPanel.BackgroundColor3 = INK
-	hintPanel.BackgroundTransparency = 0.18
+	hintPanel.BackgroundTransparency = 0.08
 	hintPanel.BorderSizePixel = 0
 	hintPanel.Parent = gui
-	roundPanel(hintPanel, 12, Color3.fromRGB(99, 218, 206))
+	roundPanel(hintPanel, 32, Color3.fromRGB(99, 218, 206))
 	local hintSize = Instance.new("UISizeConstraint")
-	hintSize.MaxSize = Vector2.new(890, 56)
+	hintSize.MaxSize = Vector2.new(910, 64)
 	hintSize.Parent = hintPanel
-	local hint = buildText(hintPanel, "CarryHint", "Touch a brainrot to buy it - carry it to a glowing pad at your base", UDim2.fromScale(0.025, 0.12), UDim2.fromScale(0.95, 0.76), CREAM, 18)
+	local hint = buildText(hintPanel, "CarryHint", "Touch a brainrot to buy it - carry it to a glowing pad at your base", UDim2.fromScale(0.05, 0.14), UDim2.fromScale(0.9, 0.72), CREAM, 20)
 	hint.TextWrapped = true
 	local flash = Instance.new("Frame")
 	flash.Name = "ScreenFeedback"

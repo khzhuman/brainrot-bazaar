@@ -8,6 +8,7 @@ local CharacterFactory = {}
 local WHITE = Color3.fromRGB(255, 253, 241)
 local BLACK = Color3.fromRGB(28, 32, 43)
 local GOLD = Color3.fromRGB(255, 199, 48)
+local MASCOT_SCALE = 1.35
 
 local function buildPart(model: Model, name: string, shape: string, size: Vector3, position: Vector3, colour: Color3, scale: number, rotation: CFrame?, material: Enum.Material?): BasePart
 	local part: BasePart
@@ -194,7 +195,7 @@ local function buildMoonlightMermanatee(model: Model, colour: Color3, scale: num
 	local glow = Instance.new("PointLight")
 	glow.Color = Color3.fromRGB(100, 177, 255)
 	glow.Brightness = 0.7
-	glow.Range = 9
+	glow.Range = 9 * MASCOT_SCALE
 	glow.Parent = moon
 end
 
@@ -261,11 +262,11 @@ function CharacterFactory.ApplyMutation(model: Model, mutation: string)
 		end
 	end
 	if mutation == "Void" then
-		local accent = buildPart(model, "VoidNeonAccent", "Ball", Vector3.new(0.7, 0.7, 0.7), Vector3.new(0, 1.3, -1.5), Color3.fromRGB(201, 75, 255), 1, nil, Enum.Material.Neon)
+		local accent = buildPart(model, "VoidNeonAccent", "Ball", Vector3.new(0.7, 0.7, 0.7), Vector3.new(0, 1.3, -1.5), Color3.fromRGB(201, 75, 255), MASCOT_SCALE, nil, Enum.Material.Neon)
 		local glow = Instance.new("PointLight")
 		glow.Color = accent.Color
 		glow.Brightness = 0.8
-		glow.Range = 6
+		glow.Range = 6 * MASCOT_SCALE
 		glow.Parent = accent
 	end
 end
@@ -275,11 +276,32 @@ function CharacterFactory.BuildBillboard(model: Model, id: string, mutation: str
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "BrainrotLabel"
 	billboard.Adornee = model.PrimaryPart
-	billboard.Size = UDim2.fromOffset(255, 90)
+	billboard.Size = UDim2.fromOffset(280, 102)
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, 7.0 * scale, 0)
 	billboard.MaxDistance = 95
 	billboard.AlwaysOnTop = false
 	billboard.Parent = model.PrimaryPart
+	local plate = Instance.new("Frame")
+	plate.Name = "LabelPlate"
+	plate.Size = UDim2.fromScale(1, 1)
+	plate.BackgroundColor3 = Color3.fromRGB(19, 34, 46)
+	plate.BackgroundTransparency = 0.25
+	plate.BorderSizePixel = 0
+	plate.Parent = billboard
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 12)
+	corner.Parent = plate
+	local padding = Instance.new("UIPadding")
+	padding.PaddingLeft = UDim.new(0, 10)
+	padding.PaddingRight = UDim.new(0, 10)
+	padding.PaddingTop = UDim.new(0, 6)
+	padding.PaddingBottom = UDim.new(0, 6)
+	padding.Parent = plate
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Catalog.RarityColours[definition.rarity]
+	stroke.Thickness = 1.5
+	stroke.Transparency = 0.5
+	stroke.Parent = plate
 	local lines = {
 		{ text = definition.name, colour = Catalog.RarityColours[definition.rarity] },
 		{ text = string.upper(definition.rarity) .. " - $" .. Catalog.FormatMoney(definition.moneyPerSecond) .. "/s", colour = WHITE },
@@ -291,13 +313,14 @@ function CharacterFactory.BuildBillboard(model: Model, id: string, mutation: str
 		label.Position = UDim2.fromScale(0, (index - 1) / 3)
 		label.Size = UDim2.fromScale(1, 1 / 3)
 		label.BackgroundTransparency = 1
+		label.ZIndex = 2
 		label.Text = line.text
 		label.TextColor3 = line.colour
 		label.TextStrokeColor3 = Color3.fromRGB(24, 34, 50)
 		label.TextStrokeTransparency = 0.15
 		label.TextScaled = true
 		label.Font = Enum.Font.GothamBold
-		label.Parent = billboard
+		label.Parent = plate
 	end
 end
 
@@ -307,6 +330,7 @@ function CharacterFactory.BuildCharacter(id: string, mutation: string): Model
 	if id == "king_crab_capitalist" then
 		scale *= 1.08
 	end
+	local visualScale = scale * MASCOT_SCALE
 	local model = Instance.new("Model")
 	model.Name = definition.name
 	model:SetAttribute("CatalogId", id)
@@ -316,9 +340,10 @@ function CharacterFactory.BuildCharacter(id: string, mutation: string): Model
 	root.CanTouch = true
 	root.CanQuery = true
 	model.PrimaryPart = root
-	BUILDERS[id](model, definition.bodyColour, scale)
+	-- The invisible purchase/recovery root retains the recorded build's exact hitbox.
+	BUILDERS[id](model, definition.bodyColour, visualScale)
 	CharacterFactory.ApplyMutation(model, mutation)
-	CharacterFactory.BuildBillboard(model, id, mutation, scale)
+	CharacterFactory.BuildBillboard(model, id, mutation, visualScale)
 	return model
 end
 
