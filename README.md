@@ -1,6 +1,10 @@
 <!-- One job: explain how to play, build, and hand in the official recorded Brainrot Bazaar game. -->
 # BRAINROT BAZAAR
 
+[![make.fun · roblox-brainrot-01](https://make.fun/badge/roblox-brainrot-01.svg)](https://make.fun/bounty/roblox-brainrot-01?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
+[![rank](https://make.fun/badge/roblox-brainrot-01/khzhuman/brainrot-bazaar/rank.svg)](https://make.fun/bounty/roblox-brainrot-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
+[![reward](https://make.fun/badge/roblox-brainrot-01/khzhuman/brainrot-bazaar/reward.svg)](https://make.fun/bounty/roblox-brainrot-01?utm_source=github&utm_medium=readme&utm_campaign=roblox-brainrot-01)
+
 A sunny 3D seaside boardwalk where deeply unserious investments print serious money. Twelve part-built brainrots parade past striped stalls; six players each get a safe base with eight collection pads.
 
 Start with **$100**. Touch a parading creature to buy it, or use its proximity prompt to see the price. Carry one creature above your head, then touch a free glowing pad at your own base. Placed creatures pay every second. The big gumball machine sells five rarity bands of random eggs. Every purchase or hatch can roll Golden x5 (10%), Diamond x10 (3%), or Void x25 (0.5%).
